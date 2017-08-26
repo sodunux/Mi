@@ -509,16 +509,93 @@ class M1K:
 				return 1
 
 			return 0
-
+	
+	def DataBlock0(self):
+		blockn='00'
+		#KeyA
+		retstr=self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+		if retstr!='9000':
+			return 1
+		retstr=self.rdr.MiRead(blockn)
+		if ('9000' not in retstr):
+			return 1
+		restr=self.rdr.MiWrite(blockn,self.M1K_DataStr[0])
+		if ('9000' in retstr):
+			return 1
+		self.rdr.InitCl(0)
+		self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+		
+		restr=self.rdr.MiRestore(blockn)
+		if ('9000' in retstr):
+			return 1
+		self.rdr.InitCl(0)
+		self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+		
+		retstr=self.rdr.MiDecrement(blockn,'00000001')
+		if ('9000' in retstr):
+			return 1
+		
+		self.rdr.InitCl(0)
+		self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+		retstr=self.rdr.MiIncrement(blockn,'00000001')
+		if ('9000' in retstr):
+			return 1	
+		
+		self.rdr.InitCl(0)
+		self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+		retstr=self.rdr.MiTransfer(blockn)
+		if ('9000' in retstr):
+			return 1
+		#KEYB
+		self.rdr.InitCl(0)
+		retstr=self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+		if retstr!='9000':
+			return
+		retstr=self.rdr.MiRead(blockn)
+		if ('9000' not in retstr):
+			return 1
+		restr=self.rdr.MiWrite(blockn,self.M1K_DataStr[0])
+		if ('9000' in retstr):
+			return 1
+		self.rdr.InitCl(0)
+		self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+		
+		restr=self.rdr.MiRestore(blockn)
+		if ('9000' in retstr):
+			return 1
+		self.rdr.InitCl(0)
+		self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])		
+		
+		retstr=self.rdr.MiDecrement(blockn,'00000001')
+		if ('9000' in retstr):
+			return 1
+		
+		self.rdr.InitCl(0)
+		self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+		retstr=self.rdr.MiIncrement(blockn,'00000001')
+		if ('9000' in retstr):
+			return 1	
+		
+		self.rdr.InitCl(0)
+		self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+		retstr=self.rdr.MiTransfer(blockn)
+		if ('9000' in retstr):
+			return 1
+		return 0		
 
 	def DataBlock_S0(self):
 		#SUCCESS 0; ERROR 1;
 		self.Gen_M1K(0x00,0x00,0x00,0x01) 
 		self.FM349_DownloadInitData()
-		self.rdr.InitCl(0)	
 		for i in range(16):
 			for j in range(3):
+				if i==0 and j==0:
+					tmp=self.DataBlock0()
+					if tmp==1:
+						return 1
 				blockn=self.IntToStr(i*4+j)
+				#KeyA
+				self.rdr.InitCl(0)	
 				retstr=self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
 				if retstr!='9000':
 					return 1
@@ -539,46 +616,618 @@ class M1K:
 					return 1
 				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
 				if retstr!='9000':
+					return 1
+				#KeyB
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+				retstr=self.rdr.MiRestore(blockn)
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiTransfer(blockn)
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if retstr!='9000':
 					return 1								
-
 		return 0
-				#retstr=self.rdr.MiDecrement(blockn,'')
 
-				#retstr=self.rdr.MiWrite(blockn,'')
+	def DataBlock_S1(self):
+		#SUCCESS 0; ERROR 1;
+		self.Gen_M1K(0x01,0x01,0x01,0x01) 
+		self.FM349_DownloadInitData()
+		for i in range(16):
+			for j in range(3):
+				if i==0 and j==0:
+					tmp=self.DataBlock0()
+					if tmp==1:
+						return 1
+				blockn=self.IntToStr(i*4+j)
+				#KeyA
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+				retstr=self.rdr.MiRestore(blockn)
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiTransfer(blockn)
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if ('9000' in retstr):
+					return 1
+				#KeyB
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+				retstr=self.rdr.MiRestore(blockn)
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiTransfer(blockn)
+				if retstr!='9000':
+					return 1
 
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if ('9000' in retstr):
+					return 1								
+		return 0
 
+	def DataBlock_S2(self):
+		#SUCCESS 0; ERROR 1;
+		self.Gen_M1K(0x02,0x02,0x02,0x01) 
+		self.FM349_DownloadInitData()
+		for i in range(16):
+			for j in range(3):
+				if i==0 and j==0:
+					tmp=self.DataBlock0()
+					if tmp==1:
+						return 1
+				blockn=self.IntToStr(i*4+j)
+				#KeyA
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+				retstr=self.rdr.MiRestore(blockn)
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiTransfer(blockn)
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if ('9000' in retstr):
+					return 1
+				#KeyB
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+				retstr=self.rdr.MiRestore(blockn)
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiTransfer(blockn)
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if ('9000' in retstr):
+					return 1							
+		return 0
 
+	def DataBlock_S3(self):
+		#SUCCESS 0; ERROR 1;
+		self.Gen_M1K(0x03,0x03,0x03,0x01) 
+		self.FM349_DownloadInitData()
+		for i in range(16):
+			for j in range(3):
+				if i==0 and j==0:
+					tmp=self.DataBlock0()
+					if tmp==1:
+						return 1
+				blockn=self.IntToStr(i*4+j)
+				#KeyA
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				if retstr!='9000':
+					return 1
 
+				retstr=self.rdr.MiRead(blockn)
+				if ('9000' in retstr):
+					return 1
 
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])					
+				retstr=self.rdr.MiRestore(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiTransfer(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if ('9000' in retstr):
+					return 1
+				#KeyB
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])	
+				if retstr!='9000':
+					return 1
+
+				retstr=self.rdr.MiRestore(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiTransfer(blockn)
+				if ('9000' in retstr):
+					return 1
+
+							
+		return 0
+
+	def DataBlock_S4(self):
+		#SUCCESS 0; ERROR 1;
+		self.Gen_M1K(0x04,0x04,0x04,0x01) 
+		self.FM349_DownloadInitData()
+		for i in range(16):
+			for j in range(3):
+				if i==0 and j==0:
+					tmp=self.DataBlock0()
+					if tmp==1:
+						return 1
+				blockn=self.IntToStr(i*4+j)
+				#KeyA
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				if retstr!='9000':
+					return 1
+
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+			
+				retstr=self.rdr.MiRestore(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiTransfer(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if ('9000' in retstr):
+					return 1
+
+				#KeyB
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])	
+				if retstr!='9000':
+					return 1
+
+				retstr=self.rdr.MiRestore(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiTransfer(blockn)
+				if ('9000' in retstr):
+					return 1
+
+							
+		return 0
+
+	def DataBlock_S5(self):
+		#SUCCESS 0; ERROR 1;
+		self.Gen_M1K(0x05,0x05,0x05,0x01) 
+		self.FM349_DownloadInitData()
+		for i in range(16):
+			for j in range(3):
+				if i==0 and j==0:
+					tmp=self.DataBlock0()
+					if tmp==1:
+						return 1
+				blockn=self.IntToStr(i*4+j)
+				#KeyA
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				if retstr!='9000':
+					return 1
+
+				retstr=self.rdr.MiRead(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])			
+				retstr=self.rdr.MiRestore(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiTransfer(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if ('9000' in retstr):
+					return 1
+
+				#KeyB
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+					
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])	
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiRestore(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiTransfer(blockn)
+				if ('9000' in retstr):
+					return 1							
+		return 0
+
+	def DataBlock_S6(self):
+		#SUCCESS 0; ERROR 1;
+		self.Gen_M1K(0x06,0x06,0x06,0x01) 
+		self.FM349_DownloadInitData()
+		for i in range(16):
+			for j in range(3):
+				if i==0 and j==0:
+					tmp=self.DataBlock0()
+					if tmp==1:
+						return 1				
+				blockn=self.IntToStr(i*4+j)
+				#KeyA
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+				retstr=self.rdr.MiRestore(blockn)
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiTransfer(blockn)
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if ('9000' in retstr):
+					return 1
+				#KeyB
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if retstr!=(self.M1K_DataStr[i*4+j]+'9000'):
+					return 1
+				retstr=self.rdr.MiRestore(blockn)
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiTransfer(blockn)
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if retstr!='9000':
+					return 1							
+		return 0
+
+	def DataBlock_S7(self):
+		#SUCCESS 0; ERROR 1;
+		self.Gen_M1K(0x07,0x07,0x07,0x01) 
+		self.FM349_DownloadInitData()
+		for i in range(16):
+			for j in range(3):
+				if i==0 and j==0:
+					tmp=self.DataBlock0()
+					if tmp==1:
+						return 1
+				blockn=self.IntToStr(i*4+j)
+				#KeyA
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				if retstr!='9000':
+					return 1
+
+				retstr=self.rdr.MiRead(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])			
+				retstr=self.rdr.MiRestore(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiTransfer(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('00',blockn,self.M1K_KeyAStr[i])
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])
+				if ('9000' in retstr):
+					return 1
+
+				#KeyB
+				self.rdr.InitCl(0)	
+				retstr=self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				if retstr!='9000':
+					return 1
+				retstr=self.rdr.MiRead(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])					
+				retstr=self.rdr.MiWrite(blockn,self.M1K_DataStr[i*4+j])	
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiRestore(blockn)
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiDecrement(blockn,'00000010')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiIncrement(blockn,'00000011')
+				if ('9000' in retstr):
+					return 1
+
+				self.rdr.InitCl(0)	
+				self.rdr.MiAuthent('01',blockn,self.M1K_KeyBStr[i])
+				retstr=self.rdr.MiTransfer(blockn)
+				if ('9000' in retstr):
+					return 1							
+		return 0
 
 
 	def M1K_Ver(self):
-		self.TailBlock_S0()
-		self.TailBlock_S1()
-		self.TailBlock_S2()
-		self.TailBlock_S3()
-		self.TailBlock_S4()
-		self.TailBlock_S5()
-		self.TailBlock_S6()
-		self.TailBlock_S7()
-		self.DataBlock_S0()
-		self.DataBlock_S1()
-		self.DataBlock_S2()
-		self.DataBlock_S3()
-		self.DataBlock_S4()
-		self.DataBlock_S5()
-		self.DataBlock_S6()
-		self.DataBlock_S7()
+		self.ResultList=[]
+
+		self.ResultList.append(self.TailBlock_S0())
+		self.ResultList.append(self.TailBlock_S1())
+		self.ResultList.append(self.TailBlock_S2())
+		self.ResultList.append(self.TailBlock_S3())
+		self.ResultList.append(self.TailBlock_S4())
+		self.ResultList.append(self.TailBlock_S5())
+		self.ResultList.append(self.TailBlock_S6())
+		self.ResultList.append(self.TailBlock_S7())
+		self.ResultList.append(self.DataBlock_S0())
+		self.ResultList.append(self.DataBlock_S1())
+		self.ResultList.append(self.DataBlock_S2())
+		self.ResultList.append(self.DataBlock_S3())
+		self.ResultList.append(self.DataBlock_S4())
+		self.ResultList.append(self.DataBlock_S5())
+		self.ResultList.append(self.DataBlock_S6())
+		self.ResultList.append(self.DataBlock_S7())
+		print self.ResultList
+		return self.ResultList
 
 	def __del__(self):
 		pass
 	
 
 
-m=M1K()
-m.rdr.InitCl(0)
-m.rdr.MiAuthent('00','00','215ddbb38b34')
-m.rdr.MiRead('00')
+#m=M1K()
+#m.rdr.InitCl(0)
+#m.rdr.MiAuthent('00','00','215ddbb38b34')
+#m.rdr.MiRead('00')
 #m.Gen_M1K(0x00,0x00,0x00,0x01)
 
 #print m.DataBlock_S0()
